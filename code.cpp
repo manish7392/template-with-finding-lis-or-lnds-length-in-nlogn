@@ -35,7 +35,7 @@ using namespace std;
 int binaryss(V &a,V &v,int i,int h)
 {
     int lo=0,hi=h;
-    while(lo!=hi)
+    while(lo<hi)
     {
         // err3(i,lo,hi);
         int mid=(lo+hi)/2;
@@ -46,7 +46,7 @@ int binaryss(V &a,V &v,int i,int h)
         }
         else
         {
-            hi=mid-1;
+            hi=mid;
         }
        
     }
@@ -71,11 +71,20 @@ int len_of_lis(V &v)
         {
             int kk=binaryss(v,v1,i,len);
             // err3(i,kk,len);
-           v1[kk]=i;
+            // errA(v1);
+            if(kk-1>=0 && v[v1[kk-1]]==v[i])
+            {
+
+            }
+            else
+            {
+                v1[kk]=i;
+            }
+           
         }
       
     }
-    // errA(v1)/;
+    // errA(v1);
     return len;
 
 }
