@@ -1,0 +1,36 @@
+VV sparse_table(V &a)
+{
+    int l=a.size();
+    VV sp(l,V(20,0));
+    rep(i,0,l)
+    {
+        sp[i][0]=a[i];
+    }
+    repb(i,l-2,0)
+    {
+        rep(j,1,20)
+        {
+            
+            if(i+(1<<(j-1))<l)
+            {
+                sp[i][j]=sp[i][j-1];
+                sp[i][j]+=sp[i+(1<<(j-1))][j-1];
+            }
+        }
+    }
+    return sp;
+}
+ll query(VV &sp,ll i,ll j)
+{
+    ll diff=j-i;
+    ll sum=0;
+    while(i<=j && diff>=0)
+    {
+        ll logs=log2(diff+1);
+        diff-=binaryexp(2,logs,1000000007);
+        sum+=sp[i][logs];
+        i+=(1<<logs);
+    }
+    return sum;
+
+}
