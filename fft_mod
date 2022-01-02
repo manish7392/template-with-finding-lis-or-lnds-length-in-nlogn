@@ -1,0 +1,75 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+typedef long long ll;
+typedef complex<double> cd;
+
+void fft(vector<cd> &a)
+{
+    int n=a.size(),L=31-__builtin_clz(n);
+    vector<int> rev(n);
+    for(int i=0;i<n;i++) rev[i]=(rev[i/2]+((i&1)<<L))/2;
+    for(int i=0;i<n;i++) if(i<rev[i]) swap(a[i],a[rev[i]]);
+    static vector<complex<long double>> R(2,1);
+    static vector<cd> rt(2,1);
+    for(static int k=2;k<n;k*=2)
+    {
+        R.resize(n); rt.resize(n);
+        auto z=polar(1.0L,acos(-1.0L)/k);
+        for(int i=k;i<2*k;i++) rt[i]=R[i]=R[i/2]*((i&1)?z:1);
+    }
+    for(int k=1;k<n;k*=2)
+    {
+        for(int i=0;i<n;i+=2*k)
+        {
+            for(int j=0;j<k;j++)
+            {
+                cd z=rt[j+k]*a[i+j+k];
+                a[i+j+k]=a[i+j]-z;
+                a[i+j]+=z;
+            }
+        }
+    }
+}
+
+template<ll mod> vector<ll> mul_mod(vector<ll> &a,vector<ll> &b)
+{
+    int sa=a.size(),sb=b.size();
+    if(sa==0||sb==0) return {};
+    const int n=1<<(32-__builtin_clz(sa+sb-2)),S=(1<<15);
+    vector<cd> f(n),g(n),os(n),ol(n);
+    for(int i=0;i<sa;i++) f[i]=cd((a[i]>>15),a[i]&(S-1));
+    for(int i=0;i<sb;i++) g[i]=cd((b[i]>>15),b[i]&(S-1));
+    fft(f); fft(g);
+    for(int i=0;i<n;i++)
+    {
+        int j=(-i)&(n-1);
+        ol[i]=(f[j]+conj(f[i]))*g[j]/(2.0*n);
+        os[i]=(f[j]-conj(f[i]))*g[j]/(2.0*n)/1i;
+    }
+    fft(ol); fft(os);
+    vector<ll> c(sa+sb-1);
+    for(int i=0;i<sa+sb-1;i++)
+    {
+        ll av=ll(real(ol[i])+0.5),cv=ll(imag(os[i])+0.5);
+        ll bv=ll(imag(ol[i])+0.5)+ll(real(os[i])+0.5);
+        c[i]=((av%mod*S+bv)%mod*S+cv)%mod;
+    }
+    return c;
+}
+
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    int n,m;
+    cin >> n >> m;
+    vector<ll> a(n,0);
+    for(int i=0;i<n;i++) cin >> a[i];
+    vector<ll> b(m,0);
+    for(int i=0;i<m;i++) cin >> b[i];
+    const int mod=1000000007;
+    vector<ll> c=mul_mod<mod>(a,b);
+    for(int i=0;i<n+m-1;i++) cout << c[i] << " \n"[i==n+m-2];
+    return 0;
+}
