@@ -35,7 +35,7 @@ using namespace std;
 VV dp;
 V depth;
 
-void pre_comp(list<int> * adj,int n,int root,int par)
+void pre_comp(VV &adj,int n,int root,int par)
 {
     // err2(root,par);
     depth[root]=depth[par]+1;
@@ -45,15 +45,15 @@ void pre_comp(list<int> * adj,int n,int root,int par)
         dp[root][i]=dp[dp[root][i-1]][i-1];
 
     }
-    for(auto it=adj[root].begin();it!=adj[root].end();it++)
+    for(auto it:adj[root])
     {
-        if(*it !=par)
-        pre_comp(adj,n,*it,root);
+        if(it !=par)
+        pre_comp(adj,n,it,root);
     }
 
 }
 
-int lca(list<int> *adj,int x,int y,int n)
+int lca(int x,int y,int n)
 {
     if(depth[x]<depth[y])
     {
@@ -90,22 +90,24 @@ int main()
         cin.tie(NULL); cout.tie(NULL);
         #ifndef ONLINE_JUDGE
          clock_t tStart = clock();
-        freopen("input.txt","r",stdin);
-        freopen("output.txt","w",stdout);
+        freopen("D://input.txt","r",stdin);
+        freopen("D://output.txt","w",stdout);
         #endif
         int t;
-        cin>>t;
-        // t=1;
+        // cin>>t;
+        t=1;
            
         while(t--)
         {
         
-            int n,q,root;
-            cin>>n>>q>>root;
+            ll n,q,root;
+            cin>>n>>q;
+            root=1;
+            // err2(n,q);
             dp.resize(n+1,V(LOG,0));
             depth.resize(n+1,0);
 
-            list<int> * adj=new list<int>[n+1];
+            VV adj(n+1);
             rep(i,0,n-1)
             {
                 int x,y;
@@ -115,29 +117,15 @@ int main()
                 // err2(x,y);
             }
             pre_comp(adj,n,root,0);
-            // rep(i,0,n+1)
-            // {
-            //     errA(dp[i]);
-            // }
-            //queries
+
             rep(i,0,q)
             {
                 int x,y;
                 cin>>x>>y;
-                cout<<lca(adj,x,y,n)<<"\n";
+                cout<<lca(x,y,n)<<"\n";
             }
-            // rep(i,0,n+1)
-            // {
-            //     cout<<i;
-            //     for(auto it=adj[i].begin();it!=adj[i].end();it++)
-            //     {
-            //         cout<<"->"<<*it;
-            //     }cout<<"\n";
-            // }
-
-
         }
         #ifndef ONLINE_JUDGE
             printf("\nRun Time -> %.10fs\n", (double)(clock()-tStart) / CLOCKS_PER_SEC);
             #endif
-}   
+}
