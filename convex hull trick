@@ -1,0 +1,121 @@
+
+//manish kumar patel
+#include<bits/stdc++.h>
+using namespace std;
+
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+using namespace __gnu_pbds;
+
+template <class T> using Tree = tree<T, null_type, less<T>,
+    rb_tree_tag, tree_order_statistics_node_update>;
+
+
+
+
+#define ll long long
+#define ld long double
+#define rep(i,a,b) for(ll i=a;i<b;i++)
+#define repb(i,a,b) for(ll i=a;i>=b;i--)
+#define err() cout<<"--------------------------"<<endl; 
+#define errA(A) for(auto i:A)   cout<<i<<" ";cout<<endl;
+#define err1(a) cout<<#a<<" "<<a<<endl
+
+
+
+#define err2(a,b) cout<<#a<<" "<<a<<" "<<#b<<" "<<b<<endl
+#define err3(a,b,c) cout<<#a<<" "<<a<<" "<<#b<<" "<<b<<" "<<#c<<" "<<c<<endl
+#define err4(a,b,c,d) cout<<#a<<" "<<a<<" "<<#b<<" "<<b<<" "<<#c<<" "<<c<<" "<<#d<<" "<<d<<endl
+#define pb push_back
+#define all(A)  A.begin(),A.end()
+#define allr(A)    A.rbegin(),A.rend()
+#define ft first
+#define sd second
+
+#define pii pair<int,int>
+#define pll pair<ll,ll>
+#define V vector<ll>
+#define S set<ll>
+#define VV vector<V>
+#define Vpll vector<pll>
+ 
+#define endl "\n"
+
+
+struct Line {
+	mutable ll k, m, p;
+	bool operator<(const Line& o) const { return k < o.k; }
+	bool operator<(ll x) const { return p < x; }
+	long long eval(long long x) const { return k * x + m; }
+};
+ 
+struct CHT {
+	deque<Line> hull;
+	static const ll inf = LLONG_MAX;
+ 
+	ll div(ll a, ll b) { // floored division
+		return a / b - ((a ^ b) < 0 && a % b); }
+	bool isect(Line &x, const Line &y) {
+		if (x.k == y.k) x.p = x.m > y.m ? inf : -inf;
+		else x.p = div(y.m - x.m, x.k - y.k);
+		return x.p >= y.p;
+	}
+	void add(long long k, long long m) {
+		Line L = {k, m, 0};
+		while ((int) hull.size() >= 2 && (isect(L, hull.back()),
+			isect(hull.back(), hull[(int) hull.size() - 2]), L.p < hull.back().p))
+			hull.pop_back();
+		hull.push_back(L);
+	}
+	long long query(long long x) {
+		while ((int) hull.size() >= 2 && hull[0].eval(x) >= hull[1].eval(x))
+			hull.pop_front();
+		return hull[0].eval(x);
+	}
+};
+ll binaryexp(ll a,ll b,ll i)
+{
+    if(b==0)
+        return 1LL;
+    if(b==1)
+        return a;
+    ll k=binaryexp(a,b/2,i);
+    if(b&1)
+    {
+        return (((k*k)%i)*a)%i;
+    }
+    else
+        return (k*k)%i;
+}
+int main()
+    {
+        ios_base::sync_with_stdio(false);
+        cin.tie(NULL); cout.tie(NULL);
+        #ifndef ONLINE_JUDGE
+         clock_t tStart = clock();
+        freopen("D:/input.txt","r",stdin);
+        freopen("D:/output.txt","w",stdout);
+        #endif
+        int t;
+        cin>>t;
+        // t=1;
+        /*
+	for Tree<ll>
+	cout << *(o_set.find_by_order(1)) ;
+        
+	cout << o_set.order_of_key(4) ;
+        
+	*/   
+        while(t--)
+        {
+          // CHT ch;
+          // ch.add({m},{c});
+          // ch.query({x});
+
+
+        }
+        #ifndef ONLINE_JUDGE
+            printf("\nRun Time -> %.10fs\n", (double)(clock()-tStart) / CLOCKS_PER_SEC);
+            #endif
+} 
+
