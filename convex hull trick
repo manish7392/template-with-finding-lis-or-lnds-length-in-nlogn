@@ -109,8 +109,8 @@ int main()
         while(t--)
         {
           // CHT ch;
-          // ch.add({m},{c});
-          // ch.query({x});
+          // ch.add(m,c);
+          // ch.query(x);
 
 
         }
