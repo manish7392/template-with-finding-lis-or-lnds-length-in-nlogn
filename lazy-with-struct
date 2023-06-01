@@ -1,0 +1,269 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+#define NDEBUG
+#include <cassert>
+
+
+typedef long long ll;
+typedef long double Double;
+typedef unsigned long long ull;
+typedef pair<int,int> ii;
+typedef pair<ll,ll> llll;
+typedef pair<double,double> dd;
+
+typedef vector<int> vi;
+typedef vector<vector<int>> vvi;
+typedef vector<ii> vii;
+typedef vector<vector<ii>> vvii;
+typedef vector<ll> vll;
+typedef vector<vector<ll>> vvll;
+typedef vector<llll> vllll;
+typedef vector<bool> vb;
+typedef vector<string> vs;
+typedef vector<double> vd;
+typedef vector<long double> vD;
+
+#define sz(a)  int((a).size())
+#define pb  push_back
+#define eb  emplace_back
+#define FOR(var,from,to) for(int var=(from);var<=(to);++var)
+#define rep(var,n)  for(int var=0;var<(n);++var)
+#define rep1(var,n)  for(int var=1;var<=(n);++var)
+#define repC2(vari,varj,n)  for(int vari=0;vari<(n)-1;++vari)for(int varj=vari+1;varj<(n);++varj)
+#define repC3(vari,varj,vark,n)  for(int vari=0;vari<(n)-2;++vari)for(int varj=vari+1;varj<(n)-1;++varj)for(int vark=varj+1;vark<(n);++vark)
+#define ALL(c)  (c).begin(),(c).end()
+#define RALL(c)  (c).rbegin(),(c).rend()
+#define tr(i,c)  for(auto i=(c).begin(); i!=(c).end(); ++i)
+#define found(s,e)  ((s).find(e)!=(s).end())
+#define mset(arr,val)  memset(arr,val,sizeof(arr))
+#define mid(x,y) ((x)+((y)-(x))/2)
+#define IN(x,a,b) ((a)<=(x)&&(x)<=(b))
+#define cons make_pair
+#define clamp(v,lo,hi) min(max(v,lo),hi)
+
+
+template <typename Elem, typename LazyOperand>
+class LazySegmentTree {
+ public:
+    Elem (*f)(Elem a, Elem b);
+    Elem (*g)(Elem a, LazyOperand b);
+    void (*h)(LazyOperand& a, LazyOperand b);
+    using fTYPE = decltype(f);
+    using gTYPE = decltype(g);
+    using hTYPE = decltype(h);
+
+    Elem elem_ident;
+    LazyOperand lazy_operand_ident;
+    vector<Elem> elems;
+    vector<LazyOperand> lazy_operands;
+    int n, height;
+
+    LazySegmentTree(fTYPE f, gTYPE g, hTYPE h,
+                    Elem elem_ident, LazyOperand lazy_operand_ident)
+        : f(f), g(g), h(h),
+          elem_ident(elem_ident), lazy_operand_ident(lazy_operand_ident) {}
+
+    void init(int n_temp) {
+        n = 1; height = 0;
+        while (n < n_temp) { n <<= 1; ++height; }
+        elems.assign(2*n, elem_ident);
+        lazy_operands.assign(2*n, lazy_operand_ident);
+    }
+
+    void build(const vector<Elem>& v){
+        int n_temp = v.size();
+        init(n_temp);
+        rep(i,n_temp) elems[n+i] = v[i];
+        for (int i=n-1; i>0; --i) {
+            elems[i] = (*f)(elems[i*2], elems[i*2+1]);
+        }
+    }
+
+    inline void swipe(int k){
+        elems[k] = reflect(k);
+        lazy_operands[k] = lazy_operand_ident;
+    }
+    inline void assign_merged_lazy(int dest, LazyOperand x) {
+        (*h)(lazy_operands[dest], x);
+    }
+
+    inline Elem reflect(int k){
+        return (lazy_operands[k] == lazy_operand_ident) ? elems[k] : (*g)(elems[k], lazy_operands[k]);
+    }
+
+    inline void _eval(int k){
+        if (lazy_operands[k] != lazy_operand_ident) {
+            assign_merged_lazy(k*2, lazy_operands[k]);
+            assign_merged_lazy(k*2+1, lazy_operands[k]);
+
+            elems[k] = reflect(k);
+            lazy_operands[k] = lazy_operand_ident;
+        }
+    }
+
+    inline void eval_down(int k) {
+        for (int i=height; i>0; --i) {
+            _eval(k >> i);
+        }
+    }
+
+    inline void recalc(int k) {
+        while (k >>= 1) {
+            elems[k] = (*f)(reflect(k*2), reflect(k*2+1));
+        }
+    }
+
+    void update(int a, int b, LazyOperand x) {
+        a += n; b += n;
+        eval_down(a);
+        eval_down(b-1);
+        for (int l=a,r=b; l<r; l>>=1,r>>=1) {
+            if (l & 1) assign_merged_lazy(l++, x);
+            if (r & 1) assign_merged_lazy(--r, x);
+        }
+        recalc(a);
+        recalc(b-1);
+    }
+
+    void set_val(int a, Elem e) {
+        a += n;
+        eval_down(a);
+        elems[a] = e;
+        lazy_operands[a] = lazy_operand_ident;
+        recalc(a);
+    }
+
+    Elem query(int a, int b) {
+        a += n; b += n;
+        eval_down(a);
+        eval_down(b-1);
+        Elem vl = elem_ident, vr = elem_ident;
+        for (int l=a,r=b; l<r; l>>=1,r>>=1) {
+            if (l & 1) vl = (*f)(vl, reflect(l++));
+            if (r & 1) vr = (*f)(reflect(--r), vr);
+        }
+        Elem merged = (*f)(vl, vr);
+        return merged;
+    }
+
+    void desc() {
+    }
+};
+
+
+template <typename T>
+class MyLazySegTree {
+    using Elem = pair<T, ii>;
+    using LazyOp = pair<int,T>;
+    using LazyOperand = vector<LazyOp>;
+    using Monoid = pair<Elem,int>;
+
+    static Monoid f(Monoid a, Monoid b) {
+        return Monoid(Elem(a.first.first + b.first.first,
+                           ii( a.first.second.first + b.first.second.first,
+                               a.first.second.second + b.first.second.second )),
+                      a.second + b.second);
+    }
+    static Monoid g(Monoid a, LazyOperand b) {
+        T x = a.first.first;
+        ii parity = a.first.second;
+        int mag = a.second;
+
+        for (LazyOp& op: b) {
+            if (op.first) {
+                x = parity.second;
+            } else {
+                T k = op.second;
+                x += k * mag;
+                if (k % 2) parity = ii(parity.second, parity.first);
+            }
+        }
+        return Monoid(Elem(x, parity), mag);
+    }
+    static void h(LazyOperand& a, LazyOperand b) {
+        int al = a.size(), bl = b.size();
+        int amod = -1;
+        rep(i,al){
+            if (a[i].first) { amod = i; break; }
+        }
+        rep(i,bl){
+            if (b[i].first) {
+                if (amod != -1){
+                    a.erase(a.begin()+amod);
+                }
+                a.pb(b[i]);
+            } else {
+                if (!a.empty() && !a.back().first) {
+                    a.back().second += b[i].second;
+                } else {
+                    a.pb(b[i]);
+                }
+            }
+        }
+    }
+public:
+    LazySegmentTree<Monoid, LazyOperand> *st = nullptr;
+public:
+    MyLazySegTree(int size) {
+        this->st = new LazySegmentTree<Monoid, LazyOperand>(
+                     &f, &g, &h, Monoid(Elem(0,ii(0,0)),0), vector<LazyOp>() );
+        this->st->build(vector<Monoid>(size, Monoid(Elem(0,ii(0,0)), 1)));
+    }
+    MyLazySegTree(vector<T>& ar) {
+        this->st = new LazySegmentTree<Monoid, LazyOperand>(
+                     &f, &g, &h, Monoid(Elem(0,ii(0,0)),0), vector<LazyOp>() );
+        vector<Monoid> tmp(ar.size());
+        rep(i, ar.size()) {
+            tmp[i] = Monoid(Elem(ar[i], ii(1-ar[i]%2, ar[i]%2)), 1);
+        }
+        this->st->build(tmp);
+    }
+    virtual ~MyLazySegTree() { if (st != nullptr) delete st; }
+
+public:
+    void update_plus(int l, int r, T x) {
+        st->update(l, r, vector<LazyOp>{ LazyOp(0,x) });
+    }
+    void update_mod(int l, int r){
+        st->update(l, r, vector<LazyOp>{ LazyOp(1,0) });
+    }
+    T query(int l, int r) { return st->query(l, r).first.first; }
+};
+
+inline vll vi2vll(vi& orig) {
+    int L = orig.size();
+    vll dest(L);
+    rep(i, L) dest[i] = (ll)orig[i];
+    return dest;
+}
+
+int main() {
+    int N, Q; scanf("%d %d%*c", &N, &Q);
+    vi a(N);
+    FOR(i,0,N-1) {
+    	cin>>a[i];
+    }
+    vll aLL = vi2vll(a);
+    MyLazySegTree<ll> st(aLL);
+    rep(i,Q){
+        int op, l, r, x;
+        scanf("%d ", &op);
+        switch (op) {
+            case 1:
+                scanf("%d %d%*c", &l, &r); --l;
+                st.update_mod(l, r);
+                break;
+            case 2:
+                scanf("%d %d %d%*c", &l, &r, &x); --l;
+                st.update_plus(l, r, x);
+                break;
+            case 3:
+                scanf("%d %d%*c", &l, &r); --l;
+                ll y = st.query(l, r);
+                printf("%lld\n", y);
+                break;
+        }
+    }
+    return 0;
+}
